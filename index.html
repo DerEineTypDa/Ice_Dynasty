@@ -1,0 +1,4481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ice Dynasty - Hockey Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Chakra+Petch:wght@400;500;600&family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-dark: #0a0e17;
+            --secondary-dark: #121a2e;
+            --tertiary-dark: #1a2540;
+            --card-dark: #162032;
+            --ice-blue: #00d4ff;
+            --ice-blue-glow: #00d4ff;
+            --ice-blue-dim: #0099cc;
+            --frost-white: #e8f4fc;
+            --silver: #8b9eb3;
+            --success: #00ff88;
+            --warning: #ff9500;
+            --danger: #ff4757;
+            --gold: #ffd700;
+            --purple: #a855f7;
+            --glass: rgba(22, 32, 50, 0.8);
+            --glass-border: rgba(0, 212, 255, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Chakra Petch', sans-serif;
+            background: var(--primary-dark);
+            color: var(--frost-white);
+            min-height: 100vh;
+            line-height: 1.5;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            top: -50%;
+            left: -50%;
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(0, 212, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(ellipse at 80% 80%, rgba(168, 85, 247, 0.05) 0%, transparent 40%),
+                radial-gradient(ellipse at 50% 50%, rgba(0, 255, 136, 0.03) 0%, transparent 50%);
+            animation: bgPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes bgPulse {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(-5%, -5%) rotate(5deg); }
+        }
+
+        /* Ice Rink Pattern */
+        .rink-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(90deg, transparent, transparent 100px, rgba(0, 212, 255, 0.02) 100px, rgba(0, 212, 255, 0.02) 101px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, rgba(18, 26, 46, 0.95) 0%, rgba(10, 14, 23, 0.95) 100%);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            width: 42px;
+            height: 42px;
+            background: linear-gradient(135deg, var(--ice-blue) 0%, var(--ice-blue-dim) 100%);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            box-shadow: 0 0 25px rgba(0, 212, 255, 0.5);
+            animation: logoGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes logoGlow {
+            from { box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+            to { box-shadow: 0 0 35px rgba(0, 212, 255, 0.7); }
+        }
+
+        .logo-text {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--frost-white) 0%, var(--ice-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .header-stat {
+            text-align: center;
+        }
+
+        .header-stat-label {
+            font-size: 0.65rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.95rem;
+            color: var(--ice-blue);
+            font-weight: 600;
+        }
+
+        /* Mobile Menu Button */
+        .menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: var(--frost-white);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 8px;
+        }
+
+        /* Navigation */
+        .nav-container {
+            background: var(--secondary-dark);
+            border-bottom: 1px solid var(--glass-border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            padding: 8px 12px;
+            min-width: max-content;
+        }
+
+        .nav-tab {
+            padding: 10px 16px;
+            background: transparent;
+            border: none;
+            color: var(--silver);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: var(--ice-blue);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-tab:hover {
+            color: var(--frost-white);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .nav-tab:hover::before {
+            width: 60%;
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 153, 204, 0.2) 100%);
+            color: var(--ice-blue);
+        }
+
+        .nav-tab.active::before {
+            width: 80%;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 130px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 260px;
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid var(--glass-border);
+            padding: 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+
+        .sidebar-section {
+            margin-bottom: 20px;
+        }
+
+        .sidebar-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .sidebar-item {
+            padding: 12px 14px;
+            background: var(--card-dark);
+            border-radius: 10px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sidebar-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--ice-blue);
+            transform: scaleY(0);
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-item:hover {
+            border-color: var(--ice-blue);
+            transform: translateX(4px);
+            background: var(--tertiary-dark);
+        }
+
+        .sidebar-item:hover::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-item.active {
+            border-color: var(--ice-blue);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.15) 0%, rgba(0, 153, 204, 0.1) 100%);
+        }
+
+        .sidebar-item.active::before {
+            transform: scaleY(1);
+        }
+
+        .sidebar-item-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .sidebar-item-subtitle {
+            font-size: 0.75rem;
+            color: var(--silver);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            max-width: 100%;
+        }
+
+        .page {
+            display: none;
+            animation: pageIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes pageIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 212, 255, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .card-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--frost-white);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title-icon {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--ice-blue) 0%, var(--ice-blue-dim) 100%);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ice-blue) 0%, var(--ice-blue-dim) 100%);
+            color: var(--primary-dark);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(0, 212, 255, 0.6);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 2px solid var(--ice-blue);
+            color: var(--ice-blue);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger) 0%, #cc3a47 100%);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.15);
+            transform: translateY(-2px);
+        }
+
+        .btn-small {
+            padding: 8px 14px;
+            font-size: 0.8rem;
+        }
+
+        .btn-icon {
+            padding: 10px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Player Card */
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            background: var(--card-dark);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .player-card:hover {
+            border-color: var(--ice-blue);
+            transform: translateX(6px);
+            background: var(--tertiary-dark);
+        }
+
+        .player-avatar {
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--primary-dark);
+            flex-shrink: 0;
+        }
+
+        .player-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .player-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .player-position {
+            font-size: 0.8rem;
+            color: var(--silver);
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 12px;
+            flex-shrink: 0;
+        }
+
+        .player-stat {
+            text-align: center;
+            min-width: 45px;
+        }
+
+        .player-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .player-stat-label {
+            font-size: 0.65rem;
+            color: var(--silver);
+            text-transform: uppercase;
+        }
+
+        .rating-high { color: var(--success); }
+        .rating-mid { color: var(--warning); }
+        .rating-low { color: var(--danger); }
+
+        /* Skill Bars */
+        .skill-bars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .skill-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .skill-label {
+            font-size: 0.7rem;
+            color: var(--silver);
+            width: 32px;
+            font-weight: 600;
+        }
+
+        .skill-track {
+            flex: 1;
+            height: 6px;
+            background: var(--primary-dark);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 3px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            color: var(--silver);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            background: var(--primary-dark);
+            border: 1px solid var(--tertiary-dark);
+            border-radius: 10px;
+            color: var(--frost-white);
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--ice-blue);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.25);
+        }
+
+        .form-select option {
+            background: var(--secondary-dark);
+        }
+
+        /* Match Screen */
+        .match-screen {
+            text-align: center;
+        }
+
+        .match-arena {
+            background: linear-gradient(180deg, var(--tertiary-dark) 0%, var(--primary-dark) 100%);
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-arena::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--ice-blue), var(--purple), var(--ice-blue));
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .match-team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .match-team-logo {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, var(--tertiary-dark) 0%, var(--card-dark) 100%);
+            border-radius: 50%;
+            margin: 0 auto 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            border: 3px solid var(--glass-border);
+            transition: all 0.3s ease;
+        }
+
+        .match-team-logo.goal {
+            animation: goalCelebrate 1s ease;
+        }
+
+        @keyframes goalCelebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); box-shadow: 0 0 40px var(--success); }
+        }
+
+        .match-team-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .match-score {
+            padding: 0 20px;
+        }
+
+        .match-score-display {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3.5rem;
+            color: var(--ice-blue);
+            text-shadow: 0 0 40px rgba(0, 212, 255, 0.6);
+            letter-spacing: 4px;
+        }
+
+        .match-period {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: var(--silver);
+            margin-top: 6px;
+        }
+
+        .match-time {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            color: var(--warning);
+            margin-top: 4px;
+        }
+
+        .match-stats-row {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .match-stat-box {
+            text-align: center;
+        }
+
+        .match-stat-label {
+            font-size: 0.7rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .match-stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            color: var(--ice-blue);
+        }
+
+        /* Momentum Bar */
+        .momentum-container {
+            margin: 20px 0;
+            padding: 16px;
+            background: var(--primary-dark);
+            border-radius: 12px;
+        }
+
+        .momentum-label {
+            font-size: 0.75rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .momentum-bar {
+            height: 12px;
+            background: var(--tertiary-dark);
+            border-radius: 6px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .momentum-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%);
+            border-radius: 6px;
+            transition: width 0.5s ease;
+        }
+
+        .momentum-indicator {
+            position: absolute;
+            top: -4px;
+            width: 4px;
+            height: 20px;
+            background: var(--frost-white);
+            border-radius: 2px;
+            transition: left 0.5s ease;
+            box-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+
+        /* Commentary */
+        .commentary-container {
+            background: var(--primary-dark);
+            border-radius: 12px;
+            padding: 16px;
+            max-height: 220px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .commentary-item {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--tertiary-dark);
+            font-size: 0.9rem;
+            animation: commentIn 0.3s ease;
+        }
+
+        @keyframes commentIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .commentary-time {
+            color: var(--ice-blue);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem;
+            margin-right: 10px;
+        }
+
+        .commentary-event {
+            color: var(--success);
+            font-weight: 700;
+        }
+
+        .commentary-event.goal {
+            color: var(--success);
+        }
+
+        .commentary-event.penalty {
+            color: var(--danger);
+        }
+
+        .commentary-event.save {
+            color: var(--ice-blue);
+        }
+
+        /* Live Events */
+        .live-events {
+            display: flex;
+            gap: 10px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .live-event {
+            padding: 8px 16px;
+            background: var(--card-dark);
+            border-radius: 20px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            animation: eventPulse 2s ease infinite;
+        }
+
+        @keyframes eventPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .live-event.active {
+            background: var(--ice-blue);
+            color: var(--primary-dark);
+        }
+
+        /* Match Controls */
+        .match-controls {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        /* Tactics Panel */
+        .tactics-panel {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 12px;
+        }
+
+        .tactic-option {
+            padding: 14px;
+            background: var(--card-dark);
+            border-radius: 10px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .tactic-option:hover {
+            border-color: var(--ice-blue-dim);
+            transform: translateY(-2px);
+        }
+
+        .tactic-option.selected {
+            border-color: var(--ice-blue);
+            background: linear-gradient(135deg, rgba(0, 212, 255, 0.2) 0%, rgba(0, 153, 204, 0.15) 100%);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+        }
+
+        .tactic-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .tactic-desc {
+            font-size: 0.75rem;
+            color: var(--silver);
+        }
+
+        /* Line Editor */
+        .line-editor {
+            background: var(--card-dark);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 14px;
+        }
+
+        .line-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--ice-blue);
+            font-size: 0.95rem;
+        }
+
+        .line-players {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .line-player-slot {
+            width: 90px;
+            padding: 10px 8px;
+            background: var(--primary-dark);
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px dashed var(--silver);
+            transition: all 0.3s ease;
+        }
+
+        .line-player-slot:hover {
+            border-color: var(--ice-blue);
+            background: var(--tertiary-dark);
+        }
+
+        .line-player-slot.filled {
+            border-style: solid;
+            border-color: var(--ice-blue);
+            background: var(--card-dark);
+        }
+
+        .line-player-slot .player-name {
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .line-player-slot .player-pos {
+            font-size: 0.65rem;
+            color: var(--silver);
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        /* Stats */
+        .stat-box {
+            background: var(--card-dark);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.6rem;
+            color: var(--ice-blue);
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            margin-top: 4px;
+            letter-spacing: 1px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 10px;
+            background: var(--primary-dark);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 5px;
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 10px 18px;
+            background: var(--card-dark);
+            border: none;
+            border-radius: 8px 8px 0 0;
+            color: var(--silver);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--frost-white);
+            background: var(--tertiary-dark);
+        }
+
+        .tab.active {
+            background: var(--ice-blue);
+            color: var(--primary-dark);
+        }
+
+        /* League Table */
+        .league-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 4px;
+        }
+
+        .league-table th {
+            padding: 12px;
+            background: var(--card-dark);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--silver);
+            text-transform: uppercase;
+        }
+
+        .league-table th:first-child {
+            border-radius: 8px 0 0 8px;
+        }
+
+        .league-table th:last-child {
+            border-radius: 0 8px 8px 0;
+        }
+
+        .league-table td {
+            padding: 12px;
+            text-align: center;
+            background: var(--card-dark);
+        }
+
+        .league-table tr {
+            transition: all 0.3s ease;
+        }
+
+        .league-table tr:hover {
+            background: var(--tertiary-dark);
+        }
+
+        .league-pos {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: var(--tertiary-dark);
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .league-pos.playoffs {
+            background: linear-gradient(135deg, var(--ice-blue) 0%, var(--ice-blue-dim) 100%);
+            color: var(--primary-dark);
+        }
+
+        /* News Feed */
+        .news-item {
+            padding: 16px;
+            background: var(--card-dark);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid var(--ice-blue);
+            transition: all 0.3s ease;
+        }
+
+        .news-item:hover {
+            transform: translateX(4px);
+        }
+
+        .news-item.important {
+            border-left-color: var(--gold);
+        }
+
+        .news-item.victory {
+            border-left-color: var(--success);
+        }
+
+        .news-item.defeat {
+            border-left-color: var(--danger);
+        }
+
+        .news-date {
+            font-size: 0.7rem;
+            color: var(--silver);
+            margin-bottom: 4px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .news-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+
+        .news-content {
+            font-size: 0.85rem;
+            color: var(--silver);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--secondary-dark);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 550px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border: 1px solid var(--glass-border);
+            animation: modalIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9) translateY(20px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .modal-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--silver);
+            font-size: 1.8rem;
+            cursor: pointer;
+            padding: 4px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+            transform: rotate(90deg);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3000;
+            padding: 20px;
+        }
+
+        .welcome-logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--frost-white) 0%, var(--ice-blue) 50%, var(--frost-white) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 12px;
+            animation: welcomeGlow 3s ease-in-out infinite alternate;
+            text-align: center;
+        }
+
+        @keyframes welcomeGlow {
+            from { 
+                text-shadow: 0 0 30px rgba(0, 212, 255, 0.6);
+                filter: brightness(1);
+            }
+            to { 
+                text-shadow: 0 0 60px rgba(0, 212, 255, 1);
+                filter: brightness(1.1);
+            }
+        }
+
+        .welcome-subtitle {
+            font-size: 1rem;
+            color: var(--silver);
+            margin-bottom: 40px;
+        }
+
+        .welcome-form {
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .welcome-form .form-group {
+            margin-bottom: 18px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.15);
+        }
+
+        .color-option.selected {
+            border-color: var(--frost-white);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            transform: scale(1.1);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 90px;
+            right: 20px;
+            background: var(--secondary-dark);
+            border-radius: 12px;
+            padding: 16px 24px;
+            border-left: 4px solid var(--ice-blue);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            z-index: 2500;
+            animation: notifIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            max-width: 320px;
+        }
+
+        @keyframes notifIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notification.success { border-left-color: var(--success); }
+        .notification.warning { border-left-color: var(--warning); }
+        .notification.error { border-left-color: var(--danger); }
+        .notification.info { border-left-color: var(--ice-blue); }
+
+        /* Status Bar */
+        .status-bar {
+            background: var(--secondary-dark);
+            border-top: 1px solid var(--glass-border);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            animation: statusPulse 2s ease infinite;
+        }
+
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+        }
+
+        .status-dot.danger {
+            background: var(--danger);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--tertiary-dark);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ice-blue-dim);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 220px;
+            }
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                position: fixed;
+                left: -280px;
+                top: 0;
+                bottom: 0;
+                z-index: 999;
+                transition: left 0.3s ease;
+                width: 260px;
+                padding-top: 60px;
+            }
+
+            .sidebar.open {
+                left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0,0,0,0.7);
+                z-index: 998;
+            }
+
+            .sidebar-overlay.open {
+                display: block;
+            }
+
+            .header-stats {
+                display: none;
+            }
+
+            .header-stat-value {
+                font-size: 0.8rem;
+            }
+
+            .logo-text {
+                font-size: 1.1rem;
+            }
+
+            .content {
+                padding: 12px;
+            }
+
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+
+            .match-score-display {
+                font-size: 2.5rem;
+            }
+
+            .match-team-logo {
+                width: 55px;
+                height: 55px;
+                font-size: 1.4rem;
+            }
+
+            .player-card {
+                flex-wrap: wrap;
+            }
+
+            .player-stats {
+                width: 100%;
+                justify-content: space-around;
+                margin-top: 10px;
+            }
+
+            .welcome-logo {
+                font-size: 2rem;
+            }
+
+            .card {
+                padding: 14px;
+            }
+
+            .stat-value {
+                font-size: 1.3rem;
+            }
+
+            .tactics-panel {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .nav-tab {
+                padding: 8px 12px;
+                font-size: 0.75rem;
+            }
+
+            .match-arena {
+                padding: 20px 12px;
+            }
+
+            .match-stats-row {
+                gap: 15px;
+            }
+
+            .match-stat-value {
+                font-size: 1.4rem;
+            }
+
+            .btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+            }
+
+            .skill-bars {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-ice { color: var(--ice-blue); }
+        .text-gold { color: var(--gold); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-silver { color: var(--silver); }
+        .mt-12 { margin-top: 12px; }
+        .mt-16 { margin-top: 16px; }
+        .mb-12 { margin-bottom: 12px; }
+        .mb-16 { margin-bottom: 16px; }
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .flex-center { align-items: center; }
+        .flex-wrap { flex-wrap: wrap; }
+        .gap-8 { gap: 8px; }
+        .gap-12 { gap: 12px; }
+        .gap-16 { gap: 16px; }
+        .w-full { width: 100%; }
+    </style>
+</head>
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(180deg, var(--secondary-dark) 0%, var(--primary-dark) 100%);
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--ice-blue) 0%, var(--ice-blue-dim) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .logo-text {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--frost-white) 0%, var(--ice-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .header-stat {
+            text-align: center;
+        }
+
+        .header-stat-label {
+            font-size: 0.7rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-stat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--ice-blue);
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            gap: 4px;
+            background: var(--secondary-dark);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .nav-tab {
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: var(--silver);
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .nav-tab:hover {
+            background: var(--tertiary-dark);
+            color: var(--frost-white);
+        }
+
+        .nav-tab.active {
+            background: linear-gradient(135deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            color: var(--primary-dark);
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            background: var(--secondary-dark);
+            border-right: 1px solid rgba(0, 212, 255, 0.1);
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            margin-bottom: 24px;
+        }
+
+        .sidebar-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .sidebar-item {
+            padding: 12px;
+            background: var(--tertiary-dark);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .sidebar-item:hover {
+            border-color: var(--ice-blue);
+            transform: translateX(4px);
+        }
+
+        .sidebar-item.active {
+            border-color: var(--ice-blue);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .sidebar-item-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .sidebar-item-subtitle {
+            font-size: 0.8rem;
+            color: var(--silver);
+        }
+
+        /* Content Area */
+        .content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Cards */
+        .card {
+            background: var(--secondary-dark);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(0, 212, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(0, 212, 255, 0.3);
+            box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--frost-white);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--ice-blue);
+            color: var(--ice-blue);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            filter: brightness(1.2);
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        /* Tables */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px;
+            background: var(--tertiary-dark);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .data-table tr:hover {
+            background: var(--tertiary-dark);
+        }
+
+        /* Player Card */
+        .player-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .player-card:hover {
+            border-color: var(--ice-blue);
+            transform: translateX(4px);
+        }
+
+        .player-avatar {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--primary-dark);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 4px;
+        }
+
+        .player-position {
+            font-size: 0.85rem;
+            color: var(--silver);
+        }
+
+        .player-stats {
+            display: flex;
+            gap: 16px;
+        }
+
+        .player-stat {
+            text-align: center;
+        }
+
+        .player-stat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--ice-blue);
+        }
+
+        .player-stat-label {
+            font-size: 0.7rem;
+            color: var(--silver);
+            text-transform: uppercase;
+        }
+
+        .rating-high { color: var(--success); }
+        .rating-mid { color: var(--warning); }
+        .rating-low { color: var(--danger); }
+
+        /* Skill Bars */
+        .skill-bars {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .skill-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .skill-label {
+            font-size: 0.75rem;
+            color: var(--silver);
+            width: 30px;
+        }
+
+        .skill-track {
+            flex: 1;
+            height: 6px;
+            background: var(--primary-dark);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .skill-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--silver);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 12px;
+            background: var(--primary-dark);
+            border: 1px solid var(--tertiary-dark);
+            border-radius: 6px;
+            color: var(--frost-white);
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--ice-blue);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        .form-select option {
+            background: var(--secondary-dark);
+        }
+
+        /* Match Screen */
+        .match-screen {
+            text-align: center;
+        }
+
+        .match-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .match-team {
+            flex: 1;
+            text-align: center;
+        }
+
+        .match-team-logo {
+            width: 80px;
+            height: 80px;
+            background: var(--tertiary-dark);
+            border-radius: 50%;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+
+        .match-team-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+        }
+
+        .match-score {
+            padding: 0 32px;
+        }
+
+        .match-score-display {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 4rem;
+            color: var(--ice-blue);
+            text-shadow: 0 0 30px rgba(0, 212, 255, 0.5);
+        }
+
+        .match-period {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            color: var(--silver);
+            margin-top: 8px;
+        }
+
+        .match-time {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.2rem;
+            color: var(--warning);
+        }
+
+        .match-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin: 24px 0;
+        }
+
+        .match-stat-box {
+            background: var(--tertiary-dark);
+            padding: 16px;
+            border-radius: 8px;
+        }
+
+        .match-stat-label {
+            font-size: 0.8rem;
+            color: var(--silver);
+            text-transform: uppercase;
+        }
+
+        .match-stat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.5rem;
+            color: var(--ice-blue);
+        }
+
+        .match-commentary {
+            background: var(--primary-dark);
+            border-radius: 8px;
+            padding: 16px;
+            max-height: 200px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .commentary-item {
+            padding: 8px 0;
+            border-bottom: 1px solid var(--tertiary-dark);
+            font-size: 0.9rem;
+        }
+
+        .commentary-time {
+            color: var(--ice-blue);
+            font-family: 'Share Tech Mono', monospace;
+            margin-right: 8px;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--secondary-dark);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            animation: modalIn 0.3s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.2);
+        }
+
+        .modal-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--silver);
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .modal-close:hover {
+            color: var(--danger);
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        /* Stats */
+        .stat-box {
+            background: var(--tertiary-dark);
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 2rem;
+            color: var(--ice-blue);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--silver);
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+
+        /* Progress Bar */
+        .progress-bar {
+            height: 8px;
+            background: var(--primary-dark);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--ice-blue-dim) 0%, var(--ice-blue) 100%);
+            border-radius: 4px;
+            transition: width 0.5s ease;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            background: var(--tertiary-dark);
+            border: none;
+            border-radius: 6px 6px 0 0;
+            color: var(--silver);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab:hover {
+            color: var(--frost-white);
+        }
+
+        .tab.active {
+            background: var(--ice-blue);
+            color: var(--primary-dark);
+        }
+
+        /* Line Editor */
+        .line-editor {
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .line-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--ice-blue);
+        }
+
+        .line-players {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .line-player-slot {
+            width: 100px;
+            padding: 8px;
+            background: var(--primary-dark);
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            border: 1px dashed var(--silver);
+            transition: all 0.3s ease;
+        }
+
+        .line-player-slot:hover {
+            border-color: var(--ice-blue);
+        }
+
+        .line-player-slot.filled {
+            border-style: solid;
+            border-color: var(--ice-blue);
+        }
+
+        .line-player-slot .player-name {
+            font-size: 0.8rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .line-player-slot .player-pos {
+            font-size: 0.7rem;
+            color: var(--silver);
+        }
+
+        /* Tactics Panel */
+        .tactics-panel {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .tactic-option {
+            padding: 12px;
+            background: var(--tertiary-dark);
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tactic-option:hover {
+            border-color: var(--ice-blue-dim);
+        }
+
+        .tactic-option.selected {
+            border-color: var(--ice-blue);
+            background: rgba(0, 212, 255, 0.1);
+        }
+
+        .tactic-name {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tactic-desc {
+            font-size: 0.8rem;
+            color: var(--silver);
+        }
+
+        /* League Table */
+        .league-table {
+            width: 100%;
+        }
+
+        .league-table th {
+            padding: 12px;
+            background: var(--tertiary-dark);
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .league-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0, 212, 255, 0.1);
+        }
+
+        .league-table tr:hover {
+            background: var(--tertiary-dark);
+        }
+
+        .league-table .team-row {
+            text-align: left;
+        }
+
+        .league-pos {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            border-radius: 50%;
+            background: var(--tertiary-dark);
+            font-size: 0.8rem;
+        }
+
+        .league-pos.playoffs {
+            background: var(--ice-blue-dim);
+            color: var(--primary-dark);
+        }
+
+        /* News Feed */
+        .news-item {
+            padding: 16px;
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--ice-blue);
+        }
+
+        .news-date {
+            font-size: 0.75rem;
+            color: var(--silver);
+            margin-bottom: 4px;
+        }
+
+        .news-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .news-content {
+            font-size: 0.9rem;
+            color: var(--silver);
+        }
+
+        /* Stadium */
+        .stadium-visual {
+            height: 200px;
+            background: linear-gradient(180deg, var(--tertiary-dark) 0%, var(--primary-dark) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stadium-visual::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent 40px,
+                rgba(0, 212, 255, 0.05) 40px,
+                rgba(0, 212, 255, 0.05) 80px
+            );
+        }
+
+        /* Transfer Market */
+        .transfer-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .transfer-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .transfer-player {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .transfer-value {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--gold);
+        }
+
+        /* Training */
+        .training-slot {
+            padding: 16px;
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .training-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .training-attribute {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            color: var(--ice-blue);
+        }
+
+        /* Academy */
+        .prospect-card {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: var(--tertiary-dark);
+            border-radius: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--gold);
+        }
+
+        .prospect-potential {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--gold);
+        }
+
+        /* Footer Status Bar */
+        .status-bar {
+            background: var(--secondary-dark);
+            border-top: 1px solid rgba(0, 212, 255, 0.2);
+            padding: 12px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+        }
+
+        .status-dot.warning {
+            background: var(--warning);
+        }
+
+        .status-dot.danger {
+            background: var(--danger);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--primary-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--tertiary-dark);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--ice-blue-dim);
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: var(--primary-dark);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .welcome-logo {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 5rem;
+            font-weight: 700;
+            background: linear-gradient(90deg, var(--frost-white) 0%, var(--ice-blue) 50%, var(--frost-white) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 16px;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { text-shadow: 0 0 20px rgba(0, 212, 255, 0.5); }
+            to { text-shadow: 0 0 40px rgba(0, 212, 255, 0.8); }
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--silver);
+            margin-bottom: 48px;
+        }
+
+        .welcome-form {
+            width: 400px;
+            max-width: 90%;
+        }
+
+        .welcome-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .color-picker {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 40px;
+            height: 40px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .color-option.selected {
+            border-color: var(--frost-white);
+            box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        /* Notifications */
+        .notification {
+            position: fixed;
+            top: 100px;
+            right: 24px;
+            background: var(--secondary-dark);
+            border-radius: 8px;
+            padding: 16px 24px;
+            border-left: 3px solid var(--ice-blue);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 1500;
+            animation: slideIn 0.3s ease;
+            max-width: 350px;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(100px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notification.success { border-left-color: var(--success); }
+        .notification.warning { border-left-color: var(--warning); }
+        .notification.error { border-left-color: var(--danger); }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .sidebar {
+                width: 220px;
+            }
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            .header-info {
+                display: none;
+            }
+            .nav-tabs {
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
+            .grid-2, .grid-3, .grid-4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-ice { color: var(--ice-blue); }
+        .text-gold { color: var(--gold); }
+        .text-success { color: var(--success); }
+        .text-warning { color: var(--warning); }
+        .text-danger { color: var(--danger); }
+        .text-silver { color: var(--silver); }
+        .mt-16 { margin-top: 16px; }
+        .mb-16 { margin-bottom: 16px; }
+        .flex { display: flex; }
+        .flex-between { justify-content: space-between; }
+        .flex-center { align-items: center; }
+        .gap-8 { gap: 8px; }
+        .gap-16 { gap: 16px; }
+    </style>
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-logo">ICE DYNASTY</div>
+        <div class="welcome-subtitle">Hockey Manager Simulator</div>
+        <div class="welcome-form">
+            <div class="form-group">
+                <label class="form-label">Team Name</label>
+                <input type="text" class="form-input" id="teamNameInput" placeholder="Enter your team name" value="Ice Dynasty">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Primary Color</label>
+                <div class="color-picker" id="colorPicker">
+                    <div class="color-option selected" style="background: #00d4ff" data-color="#00d4ff"></div>
+                    <div class="color-option" style="background: #ff4757" data-color="#ff4757"></div>
+                    <div class="color-option" style="background: #00ff88" data-color="#00ff88"></div>
+                    <div class="color-option" style="background: #ffd700" data-color="#ffd700"></div>
+                    <div class="color-option" style="background: #ff9500" data-color="#ff9500"></div>
+                    <div class="color-option" style="background: #a55eea" data-color="#a55eea"></div>
+                    <div class="color-option" style="background: #ff6b81" data-color="#ff6b81"></div>
+                    <div class="color-option" style="background: #2ed573" data-color="#2ed573"></div>
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Difficulty</label>
+                <select class="form-select" id="difficultySelect">
+                    <option value="rookie">Rookie</option>
+                    <option value="pro" selected>Pro</option>
+                    <option value="veteran">Veteran</option>
+                    <option value="legend">Legend</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" style="width: 100%" onclick="startGame()">START CAREER</button>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon" id="headerLogo">ID</div>
+            <div class="logo-text">ICE DYNASTY</div>
+        </div>
+        <div class="header-info">
+            <div class="header-stat">
+                <div class="header-stat-label">Season</div>
+                <div class="header-stat-value" id="headerSeason">1</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-label">Week</div>
+                <div class="header-stat-value" id="headerWeek">1</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-label">Budget</div>
+                <div class="header-stat-value" id="headerBudget">$50M</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-label">Cap Space</div>
+                <div class="header-stat-value" id="headerCap">$85M</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-page="dashboard">Dashboard</button>
+        <button class="nav-tab" data-page="roster">Roster</button>
+        <button class="nav-tab" data-page="lines">Lines</button>
+        <button class="nav-tab" data-page="tactics">Tactics</button>
+        <button class="nav-tab" data-page="match">Match</button>
+        <button class="nav-tab" data-page="market">Market</button>
+        <button class="nav-tab" data-page="training">Training</button>
+        <button class="nav-tab" data-page="academy">Academy</button>
+        <button class="nav-tab" data-page="facilities">Facilities</button>
+        <button class="nav-tab" data-page="league">League</button>
+        <button class="nav-tab" data-page="news">News</button>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-title">Quick Actions</div>
+                <div class="sidebar-item active" onclick="showPage('dashboard')">
+                    <div class="sidebar-item-title">Dashboard</div>
+                    <div class="sidebar-item-subtitle">Overview & stats</div>
+                </div>
+                <div class="sidebar-item" onclick="showPage('roster')">
+                    <div class="sidebar-item-title">Roster</div>
+                    <div class="sidebar-item-subtitle" id="rosterCount">30 players</div>
+                </div>
+                <div class="sidebar-item" onclick="showPage('lines')">
+                    <div class="sidebar-item-title">Lines</div>
+                    <div class="sidebar-item-subtitle">Edit lines & pairs</div>
+                </div>
+                <div class="sidebar-item" onclick="showPage('tactics')">
+                    <div class="sidebar-item-title">Tactics</div>
+                    <div class="sidebar-item-subtitle">System & style</div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Game</div>
+                <div class="sidebar-item" onclick="simWeek()">
+                    <div class="sidebar-item-title">Sim Week</div>
+                    <div class="sidebar-item-subtitle">Advance time</div>
+                </div>
+                <div class="sidebar-item" onclick="showPage('match')">
+                    <div class="sidebar-item-title">Play Match</div>
+                    <div class="sidebar-item-subtitle">Next: vs AI</div>
+                </div>
+                <div class="sidebar-item" onclick="saveGame()">
+                    <div class="sidebar-item-title">Save Game</div>
+                    <div class="sidebar-item-subtitle">Manual save</div>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-title">Team Info</div>
+                <div class="stat-box mb-16">
+                    <div class="stat-value" id="teamOvr">0</div>
+                    <div class="stat-label">Team OVR</div>
+                </div>
+                <div class="stat-box mb-16">
+                    <div class="stat-value" id="teamRecord">0-0-0</div>
+                    <div class="stat-label">Record</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-value" id="teamStanding">-</div>
+                    <div class="stat-label">Standing</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="content">
+            <!-- Dashboard Page -->
+            <div class="page active" id="page-dashboard">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Welcome, GM!</div>
+                        <div class="text-silver" id="currentDate">Day 1, Week 1</div>
+                    </div>
+                    <p>Your team is ready for the season. Manage your roster, set tactics, and lead your team to the championship!</p>
+                </div>
+
+                <div class="grid-4 mt-16">
+                    <div class="stat-box">
+                        <div class="stat-value" id="dashWins">0</div>
+                        <div class="stat-label">Wins</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dashLosses">0</div>
+                        <div class="stat-label">Losses</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dashOTs">0</div>
+                        <div class="stat-label">OT/SO</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="dashPoints">0</div>
+                        <div class="stat-label">Points</div>
+                    </div>
+                </div>
+
+                <div class="grid-2 mt-16">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Next Match</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="match-team-logo" style="margin: 0 auto 12px;">🏒</div>
+                            <div class="match-team-name" id="nextOpponent">vs Unknown</div>
+                            <div class="text-silver mt-16" id="nextMatchTime">Season Week 1</div>
+                            <button class="btn btn-primary mt-16" onclick="showPage('match')">Play Match</button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Team Health</div>
+                        </div>
+                        <div class="grid-2">
+                            <div>
+                                <div class="text-silver">Injured</div>
+                                <div class="stat-value text-danger" id="injuredCount">0</div>
+                            </div>
+                            <div>
+                                <div class="text-silver">Rest Needed</div>
+                                <div class="stat-value text-warning" id="tiredCount">0</div>
+                            </div>
+                        </div>
+                        <div class="mt-16">
+                            <div class="text-silver mb-8">Team Morale</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="moraleBar" style="width: 75%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Recent News</div>
+                    </div>
+                    <div id="dashboardNews">
+                        <div class="news-item">
+                            <div class="news-date">Today</div>
+                            <div class="news-title">Season Begins!</div>
+                            <div class="news-content">The new season is here. Good luck leading your team to victory!</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roster Page -->
+            <div class="page" id="page-roster">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Team Roster</div>
+                        <div class="flex gap-8">
+                            <select class="form-select" style="width: auto" id="rosterFilter" onchange="filterRoster()">
+                                <option value="all">All Positions</option>
+                                <option value="F">Forwards</option>
+                                <option value="D">Defense</option>
+                                <option value="G">Goaltenders</option>
+                            </select>
+                            <button class="btn btn-secondary btn-small" onclick="sortRoster('ovr')">Sort by OVR</button>
+                            <button class="btn btn-secondary btn-small" onclick="sortRoster('salary')">Sort by Salary</button>
+                        </div>
+                    </div>
+                    <div id="rosterList">
+                        <!-- Players will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lines Page -->
+            <div class="page" id="page-lines">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Forward Lines</div>
+                        <button class="btn btn-secondary btn-small" onclick="autoFillLines()">Auto Fill</button>
+                    </div>
+                    <div id="forwardLines">
+                        <!-- Lines will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Defensive Pairings</div>
+                    </div>
+                    <div id="defenseLines">
+                        <!-- Defense pairs will be rendered here -->
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Special Teams</div>
+                    </div>
+                    <div class="grid-2">
+                        <div class="line-editor">
+                            <div class="line-title">Power Play 1</div>
+                            <div class="line-players" id="pp1"></div>
+                        </div>
+                        <div class="line-editor">
+                            <div class="line-title">Penalty Kill 1</div>
+                            <div class="line-players" id="pk1"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tactics Page -->
+            <div class="page" id="page-tactics">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Tactical System</div>
+                    </div>
+                    <div class="tactics-panel">
+                        <div class="tactic-option selected" data-tactic="system" value="balanced" onclick="selectTactic(this)">
+                            <div class="tactic-name">Balanced</div>
+                            <div class="tactic-desc">Moderate offense and defense</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="system" value="aggressive" onclick="selectTactic(this)">
+                            <div class="tactic-name">Aggressive</div>
+                            <div class="tactic-desc">Attack focused, higher risks</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="system" value="defensive" onclick="selectTactic(this)">
+                            <div class="tactic-name">Defensive</div>
+                            <div class="tactic-desc">Protect leads, conservative</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Forecheck Intensity</div>
+                    </div>
+                    <div class="tactics-panel">
+                        <div class="tactic-option" data-tactic="forecheck" value="low" onclick="selectTactic(this)">
+                            <div class="tactic-name">Low</div>
+                            <div class="tactic-desc">Conserve energy, protect defense</div>
+                        </div>
+                        <div class="tactic-option selected" data-tactic="forecheck" value="medium" onclick="selectTactic(this)">
+                            <div class="tactic-name">Medium</div>
+                            <div class="tactic-desc">Balanced pressure</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="forecheck" value="high" onclick="selectTactic(this)">
+                            <div class="tactic-name">High</div>
+                            <div class="tactic-desc">Force turnovers, tire opponents</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Passing Style</div>
+                    </div>
+                    <div class="tactics-panel">
+                        <div class="tactic-option" data-tactic="passing" value="patient" onclick="selectTactic(this)">
+                            <div class="tactic-name">Patient</div>
+                            <div class="tactic-desc">Wait for perfect机会</div>
+                        </div>
+                        <div class="tactic-option selected" data-tactic="passing" value="medium" onclick="selectTactic(this)">
+                            <div class="tactic-name">Medium</div>
+                            <div class="tactic-desc">Balanced approach</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="passing" value="quick" onclick="selectTactic(this)">
+                            <div class="tactic-name">Quick</div>
+                            <div class="tactic-desc">Fast decisions, move puck fast</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Physicality</div>
+                    </div>
+                    <div class="tactics-panel">
+                        <div class="tactic-option" data-tactic="physicality" value="soft" onclick="selectTactic(this)">
+                            <div class="tactic-name">Soft</div>
+                            <div class="tactic-desc">Avoid hits, protect puck</div>
+                        </div>
+                        <div class="tactic-option selected" data-tactic="physicality" value="medium" onclick="selectTactic(this)">
+                            <div class="tactic-name">Medium</div>
+                            <div class="tactic-desc">Balanced physical play</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="physicality" value="hard" onclick="selectTactic(this)">
+                            <div class="tactic-name">Hard</div>
+                            <div class="tactic-desc">Finish checks, wear down opponents</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mt-16">
+                    <div class="card-header">
+                        <div class="card-title">Shot Frequency</div>
+                    </div>
+                    <div class="tactics-panel">
+                        <div class="tactic-option" data-tactic="shotFreq" value="low" onclick="selectTactic(this)">
+                            <div class="tactic-name">Low</div>
+                            <div class="tactic-desc">Quality over quantity</div>
+                        </div>
+                        <div class="tactic-option selected" data-tactic="shotFreq" value="medium" onclick="selectTactic(this)">
+                            <div class="tactic-name">Medium</div>
+                            <div class="tactic-desc">Balanced shooting</div>
+                        </div>
+                        <div class="tactic-option" data-tactic="shotFreq" value="high" onclick="selectTactic(this)">
+                            <div class="tactic-name">High</div>
+                            <div class="tactic-desc">Generate traffic, crash net</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Match Page -->
+            <div class="page" id="page-match">
+                <div class="match-screen">
+                    <div class="card">
+                        <div class="match-header">
+                            <div class="match-team">
+                                <div class="match-team-logo" id="homeTeamLogo">🏒</div>
+                                <div class="match-team-name" id="homeTeamName">Your Team</div>
+                            </div>
+                            <div class="match-score">
+                                <div class="match-score-display" id="matchScore">0 - 0</div>
+                                <div class="match-period" id="matchPeriod">1st Period</div>
+                                <div class="match-time" id="matchTime">20:00</div>
+                            </div>
+                            <div class="match-team">
+                                <div class="match-team-logo" id="awayTeamLogo">❄️</div>
+                                <div class="match-team-name" id="awayTeamName">Opponent</div>
+                            </div>
+                        </div>
+
+                        <div class="match-stats">
+                            <div class="match-stat-box">
+                                <div class="match-stat-label">Shots</div>
+                                <div class="match-stat-value" id="homeShots">0</div>
+                            </div>
+                            <div class="match-stat-box">
+                                <div class="match-stat-label">Game Time</div>
+                                <div class="match-stat-value" id="gameMinute">0:00</div>
+                            </div>
+                            <div class="match-stat-box">
+                                <div class="match-stat-label">Shots</div>
+                                <div class="match-stat-value" id="awayShots">0</div>
+                            </div>
+                        </div>
+
+                        <div class="match-commentary" id="matchCommentary">
+                            <div class="commentary-item">
+                                <span class="commentary-time">0:00</span>
+                                Game starting! Let's see a good effort tonight.
+                            </div>
+                        </div>
+
+                        <div class="flex gap-16 flex-center mt-16">
+                            <button class="btn btn-primary" onclick="playMatch()">Play Match</button>
+                            <button class="btn btn-secondary" onclick="simMatch()">Sim Match</button>
+                            <button class="btn btn-secondary" onclick="showHighlights()">Highlights</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Market Page -->
+            <div class="page" id="page-market">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Transfer Market</div>
+                        <div>
+                            <span class="text-silver">Budget: </span>
+                            <span class="text-gold" id="transferBudget">$50M</span>
+                        </div>
+                    </div>
+                    <div class="tabs">
+                        <button class="tab active" onclick="showTransferTab('available')">Available</button>
+                        <button class="tab" onclick="showTransferTab('freeagents')">Free Agents</button>
+                        <button class="tab" onclick="showTransferTab('mybids')">My Bids</button>
+                    </div>
+                    <div class="transfer-list" id="transferList">
+                        <!-- Transfer players will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Training Page -->
+            <div class="page" id="page-training">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Player Development</div>
+                        <button class="btn btn-primary btn-small" onclick="runTraining()">Train All</button>
+                    </div>
+                    <p class="text-silver mb-16">Select a player and attribute to train. Young players develop faster.</p>
+                    <div id="trainingList">
+                        <!-- Training slots will be rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academy Page -->
+            <div class="page" id="page-academy">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Youth Academy</div>
+                        <div>
+                            <span class="text-silver">Level: </span>
+                            <span class="text-ice" id="academyLevel">1</span>
+                        </div>
+                    </div>
+                    <div class="grid-2">
+                        <div>
+                            <div class="text-silver mb-8">Academy Quality</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="academyQuality" style="width: 20%"></div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-silver">Prospects: <span id="prospectCount">0</span>/15</div>
+                        </div>
+                    </div>
+                    <div id="academyList">
+                        <!-- Prospects will be rendered here -->
+                    </div>
+                    <button class="btn btn-secondary mt-16" onclick="generateProspects()">Scout New Prospects</button>
+                </div>
+            </div>
+
+            <!-- Facilities Page -->
+            <div class="page" id="page-facilities">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Arena & Facilities</div>
+                    </div>
+                    <div class="stadium-visual">🏟️</div>
+                    <div class="grid-4">
+                        <div class="stat-box">
+                            <div class="stat-value" id="arenaLevel">1</div>
+                            <div class="stat-label">Arena Level</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="arenaCapacity">15000</div>
+                            <div class="stat-label">Capacity</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="ticketPrice">$50</div>
+                            <div class="stat-label">Ticket Price</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-value" id="revenuePerGame">$500K</div>
+                            <div class="stat-label">Revenue/Game</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid-2 mt-16">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Training Facility</div>
+                            <span class="text-ice" id="trainingLevel">Level 1</span>
+                        </div>
+                        <p class="text-silver mb-16">Improves player development rates.</p>
+                        <button class="btn btn-secondary" onclick="upgradeFacility('training')">Upgrade ($5M)</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Medical Center</div>
+                            <span class="text-ice" id="medicalLevel">Level 1</span>
+                        </div>
+                        <p class="text-silver mb-16">Reduces injury recovery time.</p>
+                        <button class="btn btn-secondary" onclick="upgradeFacility('medical')">Upgrade ($5M)</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Youth Academy</div>
+                            <span class="text-ice" id="youthLevel">Level 1</span>
+                        </div>
+                        <p class="text-silver mb-16">Better prospects from scouting.</p>
+                        <button class="btn btn-secondary" onclick="upgradeFacility('youth')">Upgrade ($5M)</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">Analytics Dept</div>
+                            <span class="text-ice" id="analyticsLevel">Level 1</span>
+                        </div>
+                        <p class="text-silver mb-16">Better transfer insights.</p>
+                        <button class="btn btn-secondary" onclick="upgradeFacility('analytics')">Upgrade ($5M)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- League Page -->
+            <div class="page" id="page-league">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">League Standings</div>
+                        <div class="tabs">
+                            <button class="tab active" onclick="showLeagueTab('regular')">Regular</button>
+                            <button class="tab" onclick="showLeagueTab('playoffs')">Playoffs</button>
+                        </div>
+                    </div>
+                    <table class="league-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>GP</th>
+                                <th>W</th>
+                                <th>L</th>
+                                <th>OT</th>
+                                <th>PTS</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leagueTable">
+                            <!-- League standings will be rendered here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- News Page -->
+            <div class="page" id="page-news">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">News Feed</div>
+                    </div>
+                    <div id="newsFeed">
+                        <!-- News items will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Status Bar -->
+    <footer class="status-bar">
+        <div class="status-item">
+            <div class="status-dot"></div>
+            <span id="statusGameDay">Day 1</span>
+        </div>
+        <div class="status-item">
+            <span class="text-silver">Next: </span>
+            <span id="statusNextMatch">vs Opponent</span>
+        </div>
+        <div class="status-item">
+            <span class="text-silver">Record: </span>
+            <span id="statusRecord">0-0-0</span>
+        </div>
+        <div class="status-item">
+            <button class="btn btn-small btn-secondary" onclick="saveGame()">Save</button>
+        </div>
+    </footer>
+
+    <!-- Player Detail Modal -->
+    <div class="modal-overlay" id="playerModal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modalPlayerName">Player Name</div>
+                <button class="modal-close" onclick="closeModal()">×</button>
+            </div>
+            <div id="modalPlayerContent">
+                <!-- Player details will be rendered here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== GAME STATE ====================
+        let gameState = {
+            team: {
+                name: 'Ice Dynasty',
+                color: '#00d4ff',
+                budget: 50000000,
+                capSpace: 85000000,
+                salaryCap: 85000000
+            },
+            season: 1,
+            week: 1,
+            day: 1,
+            record: { wins: 0, losses: 0, ot: 0 },
+            standings: { rank: 0, points: 0 },
+            players: [],
+            prospects: [],
+            tactics: {
+                system: 'balanced',
+                forecheck: 'medium',
+                passing: 'medium',
+                physicality: 'medium',
+                shotFreq: 'medium'
+            },
+            lines: {
+                f1: [null, null, null],
+                f2: [null, null, null],
+                f3: [null, null, null],
+                f4: [null, null, null],
+                d1: [null, null],
+                d2: [null, null],
+                d3: [null, null],
+                pp1: [null, null, null, null, null],
+                pk1: [null, null, null, null, null]
+            },
+            facilities: {
+                arena: 1,
+                training: 1,
+                medical: 1,
+                youth: 1,
+                analytics: 1
+            },
+            league: [],
+            news: [],
+            transferMarket: [],
+            freeAgents: [],
+            currentMatch: null,
+            difficulty: 'pro'
+        };
+
+        // ==================== PLAYER GENERATOR ====================
+        const firstNames = ['Alex', 'Jordan', 'Tyler', 'Ryan', 'Brandon', 'Cole', 'Casey', 'Dylan', 'Ethan', 'Garrett', 'Hunter', 'Isaac', 'Jake', 'Kevin', 'Logan', 'Marcus', 'Nathan', 'Oliver', 'Parker', 'Quinn', 'Ryan', 'Sam', 'Taylor', 'Victor', 'William', 'Zach', 'Andrew', 'Ben', 'Chris', 'Dan'];
+        const lastNames = ['Smith', 'Johnson', 'Williams', 'Brown', 'Jones', 'Garcia', 'Miller', 'Davis', 'Rodriguez', 'Martinez', 'Hernandez', 'Lopez', 'Gonzalez', 'Wilson', 'Anderson', 'Thomas', 'Taylor', 'Moore', 'Jackson', 'Martin', 'Lee', 'Perez', 'Thompson', 'White', 'Harris', 'Sanchez', 'Clark', 'Ramirez', 'Lewis', 'Robinson'];
+        const positions = ['C', 'LW', 'RW', 'D', 'G'];
+        const teams = ['Bruins', 'Maple Leafs', 'Canadiens', 'Rangers', 'Flyers', 'Penguins', 'Capitals', 'Blackhawks', 'Red Wings', 'Stars', 'Flames', 'Oilers', 'Canucks', 'Golden Knights', 'Avalanche', 'Lightning', 'Panthers', 'Hurricanes', 'Blue Jackets', 'Devils', 'Islanders', 'Senators', 'Sabres', 'Coyotes', 'Jets', 'Blues', 'Wild', 'Sharks', 'Kings', 'Ducks'];
+
+        function generatePlayer(age = null, minOvr = 50, maxOvr = 99) {
+            const pos = positions[Math.floor(Math.random() * (positions.length - 1))]; // No goalies for now
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const name = `${firstName} ${lastName}`;
+            
+            if (!age) {
+                age = Math.floor(Math.random() * 15) + 18; // 18-32
+            }
+            
+            const baseOvr = Math.floor(Math.random() * (maxOvr - minOvr)) + minOvr;
+            
+            return {
+                id: Date.now() + Math.random(),
+                name: name,
+                position: pos,
+                age: age,
+                ovr: baseOvr,
+                salary: Math.floor(baseOvr * 100000 * (1 + Math.random() * 0.5)),
+                contract: Math.floor(Math.random() * 4) + 1,
+                morale: 70 + Math.floor(Math.random() * 30),
+                condition: 80 + Math.floor(Math.random() * 20),
+                skills: {
+                    speed: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10),
+                    shooting: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10),
+                    passing: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10),
+                    defense: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10),
+                    physical: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10),
+                    iq: Math.min(99, baseOvr + Math.floor(Math.random() * 20) - 10)
+                },
+                isGoalie: pos === 'G',
+                gamesPlayed: 0,
+                goals: 0,
+                assists: 0,
+                points: 0,
+                plusMinus: 0,
+                shots: 0,
+                pim: 0
+            };
+        }
+
+        function generateGoalie(age = null) {
+            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
+            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
+            const name = `${firstName} ${lastName}`;
+            
+            if (!age) {
+                age = Math.floor(Math.random() * 12) + 20;
+            }
+            
+            const baseOvr = Math.floor(Math.random() * 30) + 60;
+            
+            return {
+                id: Date.now() + Math.random(),
+                name: name,
+                position: 'G',
+                age: age,
+                ovr: baseOvr,
+                salary: Math.floor(baseOvr * 120000),
+                contract: Math.floor(Math.random() * 4) + 1,
+                morale: 70 + Math.floor(Math.random() * 30),
+                condition: 80 + Math.floor(Math.random() * 20),
+                skills: {
+                    speed: baseOvr - 10,
+                    shooting: baseOvr - 20,
+                    passing: baseOvr - 15,
+                    defense: baseOvr + 10,
+                    physical: baseOvr - 5,
+                    iq: baseOvr + 5
+                },
+                isGoalie: true,
+                gamesPlayed: 0,
+                wins: 0,
+                losses: 0,
+                ot: 0,
+                gaa: 0,
+                savePct: 0
+            };
+        }
+
+        // ==================== INITIALIZATION ====================
+        function initGame(teamName, teamColor, difficulty) {
+            gameState.team.name = teamName;
+            gameState.team.color = teamColor;
+            gameState.difficulty = difficulty;
+            
+            // Generate initial roster
+            gameState.players = [];
+            
+            // Generate 6 defensemen
+            for (let i = 0; i < 6; i++) {
+                gameState.players.push(generatePlayer(22 + Math.floor(Math.random() * 8), 65, 85));
+            }
+            
+            // Generate 2 goalies
+            for (let i = 0; i < 2; i++) {
+                gameState.players.push(generateGoalie(22 + Math.floor(Math.random() * 8)));
+            }
+            
+            // Generate 18 forwards
+            for (let i = 0; i < 18; i++) {
+                gameState.players.push(generatePlayer(20 + Math.floor(Math.random() * 10), 60, 82));
+            }
+            
+            // Generate prospects
+            gameState.prospects = [];
+            for (let i = 0; i < 5; i++) {
+                const prospect = generatePlayer(16 + Math.floor(Math.random() * 2), 50, 75);
+                prospect.potential = 60 + Math.floor(Math.random() * 35);
+                gameState.prospects.push(prospect);
+            }
+            
+            // Generate league teams
+            generateLeague();
+            
+            // Generate transfer market
+            generateTransferMarket();
+            
+            // Generate free agents
+            generateFreeAgents();
+            
+            // Auto-fill lines
+            autoFillLines();
+            
+            // Update UI
+            updateAllUI();
+            
+            // Hide welcome screen
+            document.getElementById('welcomeScreen').style.display = 'none';
+            
+            // Save game
+            saveGame();
+        }
+
+        function generateLeague() {
+            gameState.league = [];
+            for (let i = 0; i < 30; i++) {
+                const teamName = i === 0 ? gameState.team.name : teams[i % teams.length] + (i > 15 ? ' ' + (Math.floor(i / teams.length) + 1) : '');
+                gameState.league.push({
+                    id: i,
+                    name: teamName,
+                    isPlayer: i === 0,
+                    gp: 0,
+                    wins: 0,
+                    losses: 0,
+                    ot: 0,
+                    points: 0,
+                    gf: 0,
+                    ga: 0
+                });
+            }
+        }
+
+        function generateTransferMarket() {
+            gameState.transferMarket = [];
+            for (let i = 0; i < 20; i++) {
+                const player = generatePlayer(22 + Math.floor(Math.random() * 8), 65, 90);
+                player.value = Math.floor(player.ovr * 500000 * (player.contract / 2));
+                gameState.transferMarket.push(player);
+            }
+        }
+
+        function generateFreeAgents() {
+            gameState.freeAgents = [];
+            for (let i = 0; i < 15; i++) {
+                const player = generatePlayer(25 + Math.floor(Math.random() * 8), 55, 80);
+                player.value = Math.floor(player.ovr * 300000);
+                gameState.freeAgents.push(player);
+            }
+        }
+
+        // ==================== UI UPDATES ====================
+        function updateAllUI() {
+            // Header
+            document.getElementById('headerSeason').textContent = gameState.season;
+            document.getElementById('headerWeek').textContent = gameState.week;
+            document.getElementById('headerBudget').textContent = '$' + (gameState.team.budget / 1000000).toFixed(0) + 'M';
+            document.getElementById('headerCap').textContent = '$' + (gameState.team.capSpace / 1000000).toFixed(0) + 'M';
+            document.getElementById('headerLogo').textContent = gameState.team.name.substring(0, 2).toUpperCase();
+            document.getElementById('headerLogo').style.background = gameState.team.color;
+            
+            // Sidebar
+            document.getElementById('rosterCount').textContent = gameState.players.length + ' players';
+            document.getElementById('teamOvr').textContent = calculateTeamOVR();
+            document.getElementById('teamRecord').textContent = gameState.record.wins + '-' + gameState.record.losses + '-' + gameState.record.ot;
+            document.getElementById('teamStanding').textContent = getStanding();
+            
+            // Dashboard
+            document.getElementById('currentDate').textContent = 'Day ' + gameState.day + ', Week ' + gameState.week;
+            document.getElementById('dashWins').textContent = gameState.record.wins;
+            document.getElementById('dashLosses').textContent = gameState.record.losses;
+            document.getElementById('dashOTs').textContent = gameState.record.ot;
+            document.getElementById('dashPoints').textContent = gameState.record.wins * 2 + gameState.record.ot;
+            document.getElementById('nextOpponent').textContent = 'vs ' + getNextOpponent();
+            document.getElementById('nextMatchTime').textContent = 'Season Week ' + gameState.week;
+            document.getElementById('injuredCount').textContent = getInjuredCount();
+            document.getElementById('tiredCount').textContent = getTiredCount();
+            document.getElementById('moraleBar').style.width = getAverageMorale() + '%';
+            
+            // Status bar
+            document.getElementById('statusGameDay').textContent = 'Day ' + gameState.day;
+            document.getElementById('statusNextMatch').textContent = 'vs ' + getNextOpponent();
+            document.getElementById('statusRecord').textContent = gameState.record.wins + '-' + gameState.record.losses + '-' + gameState.record.ot;
+            
+            // Render pages
+            renderRoster();
+            renderLines();
+            renderTransferMarket();
+            renderTraining();
+            renderAcademy();
+            renderFacilities();
+            renderLeague();
+            renderNews();
+        }
+
+        function calculateTeamOVR() {
+            if (gameState.players.length === 0) return 0;
+            const total = gameState.players.reduce((sum, p) => sum + p.ovr, 0);
+            return Math.floor(total / gameState.players.length);
+        }
+
+        function getStanding() {
+            return '#' + (gameState.standings.rank || '-');
+        }
+
+        function getNextOpponent() {
+            const opponentIndex = (gameState.week - 1) % 29 + 1;
+            return gameState.league[opponentIndex]?.name || 'Unknown';
+        }
+
+        function getInjuredCount() {
+            return gameState.players.filter(p => p.condition < 50).length;
+        }
+
+        function getTiredCount() {
+            return gameState.players.filter(p => p.condition < 70 && p.condition >= 50).length;
+        }
+
+        function getAverageMorale() {
+            if (gameState.players.length === 0) return 75;
+            const total = gameState.players.reduce((sum, p) => sum + p.morale, 0);
+            return Math.floor(total / gameState.players.length);
+        }
+
+        // ==================== ROSTER ====================
+        function renderRoster() {
+            const rosterList = document.getElementById('rosterList');
+            const filter = document.getElementById('rosterFilter')?.value || 'all';
+            
+            let players = [...gameState.players];
+            if (filter !== 'all') {
+                if (filter === 'F') {
+                    players = players.filter(p => ['C', 'LW', 'RW'].includes(p.position));
+                } else if (filter === 'D') {
+                    players = players.filter(p => p.position === 'D');
+                } else if (filter === 'G') {
+                    players = players.filter(p => p.position === 'G');
+                }
+            }
+            
+            rosterList.innerHTML = players.map(player => `
+                <div class="player-card" onclick="showPlayerModal(${player.id})">
+                    <div class="player-avatar">${player.name.split(' ').map(n => n[0]).join('')}</div>
+                    <div class="player-info">
+                        <div class="player-name">${player.name}</div>
+                        <div class="player-position">${player.position} | ${player.age} years</div>
+                    </div>
+                    <div class="player-stats">
+                        <div class="player-stat">
+                            <div class="player-stat-value ${getRatingClass(player.ovr)}">${player.ovr}</div>
+                            <div class="player-stat-label">OVR</div>
+                        </div>
+                        <div class="player-stat">
+                            <div class="player-stat-value">$${Math.floor(player.salary / 100000)}K</div>
+                            <div class="player-stat-label">Salary</div>
+                        </div>
+                        <div class="player-stat">
+                            <div class="player-stat-value">${player.contract}y</div>
+                            <div class="player-stat-label">Contract</div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getRatingClass(ovr) {
+            if (ovr >= 80) return 'rating-high';
+            if (ovr >= 70) return 'rating-mid';
+            return 'rating-low';
+        }
+
+        function filterRoster() {
+            renderRoster();
+        }
+
+        function sortRoster(by) {
+            let players = [...gameState.players];
+            if (by === 'ovr') {
+                players.sort((a, b) => b.ovr - a.ovr);
+            } else if (by === 'salary') {
+                players.sort((a, b) => b.salary - a.salary);
+            }
+            gameState.players = players;
+            renderRoster();
+        }
+
+        function showPlayerModal(playerId) {
+            const player = gameState.players.find(p => p.id === playerId);
+            if (!player) return;
+            
+            document.getElementById('modalPlayerName').textContent = player.name;
+            document.getElementById('modalPlayerContent').innerHTML = `
+                <div class="grid-2 mb-16">
+                    <div>
+                        <div class="text-silver">Position</div>
+                        <div class="text-ice">${player.position}</div>
+                    </div>
+                    <div>
+                        <div class="text-silver">Age</div>
+                        <div class="text-ice">${player.age}</div>
+                    </div>
+                    <div>
+                        <div class="text-silver">Overall</div>
+                        <div class="stat-value ${getRatingClass(player.ovr)}">${player.ovr}</div>
+                    </div>
+                    <div>
+                        <div class="text-silver">Salary</div>
+                        <div class="text-gold">$${(player.salary / 1000000).toFixed(1)}M</div>
+                    </div>
+                </div>
+                <div class="skill-bars">
+                    <div class="skill-bar">
+                        <span class="skill-label">SPE</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.speed}%"></div></div>
+                    </div>
+                    <div class="skill-bar">
+                        <span class="skill-label">SHO</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.shooting}%"></div></div>
+                    </div>
+                    <div class="skill-bar">
+                        <span class="skill-label">PAS</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.passing}%"></div></div>
+                    </div>
+                    <div class="skill-bar">
+                        <span class="skill-label">DEF</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.defense}%"></div></div>
+                    </div>
+                    <div class="skill-bar">
+                        <span class="skill-label">PHY</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.physical}%"></div></div>
+                    </div>
+                    <div class="skill-bar">
+                        <span class="skill-label">IQ</span>
+                        <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.iq}%"></div></div>
+                    </div>
+                </div>
+                <div class="grid-2 mt-16">
+                    <div>
+                        <div class="text-silver">Contract</div>
+                        <div class="text-ice">${player.contract} years</div>
+                    </div>
+                    <div>
+                        <div class="text-silver">Morale</div>
+                        <div class="progress-bar mt-8"><div class="progress-fill" style="width: ${player.morale}%"></div></div>
+                    </div>
+                </div>
+                <div class="mt-16 flex gap-8">
+                    <button class="btn btn-danger btn-small" onclick="releasePlayer(${player.id})">Release</button>
+                </div>
+            `;
+            document.getElementById('playerModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('playerModal').classList.remove('active');
+        }
+
+        function releasePlayer(playerId) {
+            const index = gameState.players.findIndex(p => p.id === playerId);
+            if (index > -1) {
+                gameState.players.splice(index, 1);
+                closeModal();
+                updateAllUI();
+                showNotification('Player released', 'success');
+            }
+        }
+
+        // ==================== LINES ====================
+        function renderLines() {
+            // Forward lines
+            const forwardLinesHtml = [1, 2, 3, 4].map(lineNum => {
+                const line = gameState.lines['f' + lineNum] || [];
+                return `
+                    <div class="line-editor">
+                        <div class="line-title">Line ${lineNum}</div>
+                        <div class="line-players">
+                            ${[0, 1, 2].map(pos => {
+                                const player = line[pos] ? gameState.players.find(p => p.id === line[pos]) : null;
+                                return `
+                                    <div class="line-player-slot ${player ? 'filled' : ''}" onclick="editLineSlot('f${lineNum}', ${pos})">
+                                        ${player ? `
+                                            <div class="player-name">${player.name.split(' ')[0]}</div>
+                                            <div class="player-pos">${player.position}</div>
+                                        ` : '<div class="text-silver">+</div>'}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('forwardLines').innerHTML = forwardLinesHtml;
+            
+            // Defense lines
+            const defenseLinesHtml = [1, 2, 3].map(pairNum => {
+                const pair = gameState.lines['d' + pairNum] || [];
+                return `
+                    <div class="line-editor">
+                        <div class="line-title">Pair ${pairNum}</div>
+                        <div class="line-players">
+                            ${[0, 1].map(pos => {
+                                const player = pair[pos] ? gameState.players.find(p => p.id === pair[pos]) : null;
+                                return `
+                                    <div class="line-player-slot ${player ? 'filled' : ''}" onclick="editLineSlot('d${pairNum}', ${pos})">
+                                        ${player ? `
+                                            <div class="player-name">${player.name.split(' ')[0]}</div>
+                                            <div class="player-pos">${player.position}</div>
+                                        ` : '<div class="text-silver">+</div>'}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            document.getElementById('defenseLines').innerHTML = defenseLinesHtml;
+            
+            // Special teams
+            const pp1 = gameState.lines.pp1 || [];
+            const pk1 = gameState.lines.pk1 || [];
+            
+            document.getElementById('pp1').innerHTML = [0, 1, 2, 3, 4].map(pos => {
+                const player = pp1[pos] ? gameState.players.find(p => p.id === pp1[pos]) : null;
+                return `
+                    <div class="line-player-slot ${player ? 'filled' : ''}" onclick="editLineSlot('pp1', ${pos})">
+                        ${player ? `
+                            <div class="player-name">${player.name.split(' ')[0]}</div>
+                            <div class="player-pos">${player.position}</div>
+                        ` : '<div class="text-silver">+</div>'}
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('pk1').innerHTML = [0, 1, 2, 3, 4].map(pos => {
+                const player = pk1[pos] ? gameState.players.find(p => p.id === pk1[pos]) : null;
+                return `
+                    <div class="line-player-slot ${player ? 'filled' : ''}" onclick="editLineSlot('pk1', ${pos})">
+                        ${player ? `
+                            <div class="player-name">${player.name.split(' ')[0]}</div>
+                            <div class="player-pos">${player.position}</div>
+                        ` : '<div class="text-silver">+</div>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function editLineSlot(lineKey, pos) {
+            // Simple player selection - in a full game, this would open a modal
+            const forwards = gameState.players.filter(p => ['C', 'LW', 'RW'].includes(p.position));
+            const defense = gameState.players.filter(p => p.position === 'D');
+            const goalies = gameState.players.filter(p => p.position === 'G');
+            
+            let availablePlayers = [];
+            if (lineKey.startsWith('f')) {
+                availablePlayers = [...forwards, ...defense];
+            } else if (lineKey.startsWith('d')) {
+                availablePlayers = defense;
+            } else if (lineKey === 'pp1') {
+                availablePlayers = [...forwards, ...defense];
+            } else if (lineKey === 'pk1') {
+                availablePlayers = [...forwards.slice(0, 8), ...defense];
+            }
+            
+            // For now, just cycle through available players
+            const currentLine = gameState.lines[lineKey];
+            const currentId = currentLine ? currentLine[pos] : null;
+            const currentIndex = currentId ? availablePlayers.findIndex(p => p.id === currentId) : -1;
+            const nextIndex = (currentIndex + 1) % availablePlayers.length;
+            
+            if (!gameState.lines[lineKey]) {
+                gameState.lines[lineKey] = [];
+            }
+            gameState.lines[lineKey][pos] = availablePlayers[nextIndex]?.id || null;
+            
+            renderLines();
+        }
+
+        function autoFillLines() {
+            const forwards = gameState.players.filter(p => ['C', 'LW', 'RW'].includes(p.position)).sort((a, b) => b.ovr - a.ovr);
+            const defense = gameState.players.filter(p => p.position === 'D').sort((a, b) => b.ovr - a.ovr);
+            
+            // Fill forward lines
+            for (let i = 0; i < 4; i++) {
+                gameState.lines['f' + (i + 1)] = [
+                    forwards[i * 3]?.id || null,
+                    forwards[i * 3 + 1]?.id || null,
+                    forwards[i * 3 + 2]?.id || null
+                ];
+            }
+            
+            // Fill defense pairs
+            for (let i = 0; i < 3; i++) {
+                gameState.lines['d' + (i + 1)] = [
+                    defense[i * 2]?.id || null,
+                    defense[i * 2 + 1]?.id || null
+                ];
+            }
+            
+            // Fill power play
+            gameState.lines.pp1 = [
+                forwards[0]?.id, forwards[1]?.id, forwards[2]?.id,
+                defense[0]?.id, defense[1]?.id
+            ].filter(Boolean);
+            
+            // Fill penalty kill
+            gameState.lines.pk1 = [
+                forwards[3]?.id, forwards[4]?.id,
+                defense[2]?.id, defense[3]?.id
+            ].filter(Boolean);
+            
+            renderLines();
+            showNotification('Lines auto-filled', 'success');
+        }
+
+        // ==================== TACTICS ====================
+        function selectTactic(element) {
+            const tacticType = element.dataset.tactic;
+            const value = element.value;
+            
+            // Update game state
+            gameState.tactics[tacticType] = value;
+            
+            // Update UI
+            document.querySelectorAll(`[data-tactic="${tacticType}"]`).forEach(el => {
+                el.classList.remove('selected');
+            });
+            element.classList.add('selected');
+        }
+
+        // ==================== MATCH ====================
+        function playMatch() {
+            const homeTeam = gameState.team;
+            const awayTeam = gameState.league[(gameState.week - 1) % 29 + 1];
+            
+            // Reset match state
+            let matchState = {
+                homeScore: 0,
+                awayScore: 0,
+                homeShots: 0,
+                awayShots: 0,
+                period: 1,
+                time: 1200, // 20 minutes in seconds
+                commentary: [],
+                momentum: 50
+            };
+            
+            // Get team OVRs
+            const homeOvr = calculateTeamOVR();
+            const awayOvr = 65 + Math.floor(Math.random() * 20);
+            
+            // Simulate period by period
+            const periods = ['1st Period', '2nd Period', '3rd Period'];
+            let commentary = [];
+            
+            for (let p = 0; p < 3; p++) {
+                // Each period has several scoring chances
+                const chances = 3 + Math.floor(Math.random() * 4);
+                
+                for (let c = 0; c < chances; c++) {
+                    const isHome = Math.random() > 0.5;
+                    const shooterOvr = isHome ? homeOvr : awayOvr;
+                    const goalieOvr = isHome ? awayOvr : homeOvr;
+                    
+                    // Shot
+                    if (isHome) matchState.homeShots++;
+                    else matchState.awayShots++;
+                    
+                    // Goal chance based on OVR difference
+                    const goalChance = (shooterOvr - goalieOvr) / 500 + 0.08;
+                    
+                    if (Math.random() < goalChance) {
+                        // GOAL!
+                        if (isHome) matchState.homeScore++;
+                        else matchState.awayScore++;
+                        
+                        const scorer = isHome ? 
+                            gameState.players[Math.floor(Math.random() * gameState.players.length)] :
+                            { name: 'Opponent Player' };
+                        
+                        commentary.push(`${periods[p]} - GOAL! ${isHome ? homeTeam.name : awayTeam.name} scores! ${scorer.name} with the goal.`);
+                    }
+                }
+                
+                // Period end commentary
+                commentary.push(`${periods[p]} ends: ${matchState.homeScore} - ${matchState.awayScore}`);
+            }
+            
+            // Update match display
+            document.getElementById('matchScore').textContent = `${matchState.homeScore} - ${matchState.awayScore}`;
+            document.getElementById('matchPeriod').textContent = 'Final';
+            document.getElementById('matchTime').textContent = '0:00';
+            document.getElementById('homeShots').textContent = matchState.homeShots;
+            document.getElementById('awayShots').textContent = matchState.awayShots;
+            document.getElementById('gameMinute').textContent = '60:00';
+            
+            // Commentary
+            document.getElementById('matchCommentary').innerHTML = commentary.map(c => 
+                `<div class="commentary-item">${c}</div>`
+            ).join('');
+            
+            // Update record
+            if (matchState.homeScore > matchState.awayScore) {
+                gameState.record.wins++;
+                addNews('Victory!', `${homeTeam.name} defeats ${awayTeam.name} ${matchState.homeScore}-${matchState.awayScore}!`);
+            } else if (matchState.homeScore < matchState.awayScore) {
+                gameState.record.losses++;
+                addNews('Defeat', `${awayTeam.name} beats ${homeTeam.name} ${matchState.awayScore}-${matchState.homeScore}.`);
+            } else {
+                gameState.record.ot++;
+                addNews('Overtime Loss', `${homeTeam.name} falls in overtime ${matchState.awayScore}-${matchState.homeScore}.`);
+            }
+            
+            // Update player stats
+            gameState.players.forEach(p => {
+                p.gamesPlayed++;
+                if (Math.random() < 0.3) {
+                    p.shots++;
+                    if (Math.random() < 0.15) {
+                        p.goals++;
+                    }
+                }
+                // Decrease condition slightly
+                p.condition = Math.max(50, p.condition - 2);
+            });
+            
+            updateAllUI();
+            showNotification('Match complete!', 'success');
+        }
+
+        function simMatch() {
+            // Quick sim
+            playMatch();
+        }
+
+        function showHighlights() {
+            showNotification('Highlights coming in v2.0', 'warning');
+        }
+
+        // ==================== TRANSFER MARKET ====================
+        function renderTransferMarket() {
+            document.getElementById('transferBudget').textContent = '$' + (gameState.team.budget / 1000000).toFixed(0) + 'M';
+            
+            const transferList = document.getElementById('transferList');
+            transferList.innerHTML = gameState.transferMarket.map(player => `
+                <div class="transfer-item">
+                    <div class="transfer-player">
+                        <div class="player-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">${player.name.split(' ').map(n => n[0]).join('')}</div>
+                        <div>
+                            <div class="player-name">${player.name}</div>
+                            <div class="text-silver">${player.position} | ${player.age}yo | OVR ${player.ovr}</div>
+                        </div>
+                    </div>
+                    <div class="flex gap-8 flex-center">
+                        <div class="transfer-value">$${(player.value / 1000000).toFixed(1)}M</div>
+                        <button class="btn btn-primary btn-small" onclick="bidPlayer(${player.id})">Bid</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function showTransferTab(tab) {
+            const transferList = document.getElementById('transferList');
+            
+            if (tab === 'available') {
+                transferList.innerHTML = gameState.transferMarket.map(player => `
+                    <div class="transfer-item">
+                        <div class="transfer-player">
+                            <div class="player-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">${player.name.split(' ').map(n => n[0]).join('')}</div>
+                            <div>
+                                <div class="player-name">${player.name}</div>
+                                <div class="text-silver">${player.position} | ${player.age}yo | OVR ${player.ovr}</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-8 flex-center">
+                            <div class="transfer-value">$${(player.value / 1000000).toFixed(1)}M</div>
+                            <button class="btn btn-primary btn-small" onclick="bidPlayer(${player.id})">Bid</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else if (tab === 'freeagents') {
+                transferList.innerHTML = gameState.freeAgents.map(player => `
+                    <div class="transfer-item">
+                        <div class="transfer-player">
+                            <div class="player-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">${player.name.split(' ').map(n => n[0]).join('')}</div>
+                            <div>
+                                <div class="player-name">${player.name}</div>
+                                <div class="text-silver">${player.position} | ${player.age}yo | OVR ${player.ovr}</div>
+                            </div>
+                        </div>
+                        <div class="flex gap-8 flex-center">
+                            <div class="transfer-value">$${(player.value / 1000000).toFixed(1)}M</div>
+                            <button class="btn btn-primary btn-small" onclick="signFreeAgent(${player.id})">Sign</button>
+                        </div>
+                    </div>
+                `).join('');
+            } else if (tab === 'mybids') {
+                transferList.innerHTML = '<div class="text-center text-silver">No active bids</div>';
+            }
+        }
+
+        function bidPlayer(playerId) {
+            const player = gameState.transferMarket.find(p => p.id === playerId);
+            if (!player) return;
+            
+            if (player.value > gameState.team.budget) {
+                showNotification('Insufficient budget!', 'error');
+                return;
+            }
+            
+            // Simple instant accept for now
+            gameState.team.budget -= player.value;
+            gameState.players.push(player);
+            
+            // Remove from market
+            const index = gameState.transferMarket.findIndex(p => p.id === playerId);
+            if (index > -1) {
+                gameState.transferMarket.splice(index, 1);
+            }
+            
+            addNews('Transfer', `Signed ${player.name} for $${(player.value / 1000000).toFixed(1)}M!`);
+            updateAllUI();
+            showNotification(`Signed ${player.name}!`, 'success');
+        }
+
+        function signFreeAgent(playerId) {
+            const player = gameState.freeAgents.find(p => p.id === playerId);
+            if (!player) return;
+            
+            if (player.salary > gameState.team.budget / 5) {
+                showNotification('Cannot afford this player!', 'error');
+                return;
+            }
+            
+            gameState.players.push(player);
+            
+            const index = gameState.freeAgents.findIndex(p => p.id === playerId);
+            if (index > -1) {
+                gameState.freeAgents.splice(index, 1);
+            }
+            
+            addNews('Free Agent', `${player.name} signed as a free agent!`);
+            updateAllUI();
+            showNotification(`Signed ${player.name}!`, 'success');
+        }
+
+        // ==================== TRAINING ====================
+        function renderTraining() {
+            const trainingList = document.getElementById('trainingList');
+            
+            // Show players that can develop
+            const developablePlayers = gameState.players
+                .filter(p => p.age < 30)
+                .slice(0, 10);
+            
+            trainingList.innerHTML = developablePlayers.map(player => `
+                <div class="training-slot">
+                    <div class="training-header">
+                        <div>
+                            <div class="player-name">${player.name}</div>
+                            <div class="text-silver">${player.position} | Age ${player.age}</div>
+                        </div>
+                        <div class="text-ice">OVR ${player.ovr}</div>
+                    </div>
+                    <div class="skill-bars">
+                        <div class="skill-bar">
+                            <span class="skill-label">SPE</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.speed}%"></div></div>
+                        </div>
+                        <div class="skill-bar">
+                            <span class="skill-label">SHO</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.shooting}%"></div></div>
+                        </div>
+                        <div class="skill-bar">
+                            <span class="skill-label">PAS</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.passing}%"></div></div>
+                        </div>
+                        <div class="skill-bar">
+                            <span class="skill-label">DEF</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.defense}%"></div></div>
+                        </div>
+                        <div class="skill-bar">
+                            <span class="skill-label">PHY</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.physical}%"></div></div>
+                        </div>
+                        <div class="skill-bar">
+                            <span class="skill-label">IQ</span>
+                            <div class="skill-track"><div class="skill-fill" style="width: ${player.skills.iq}%"></div></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function runTraining() {
+            const developmentRate = gameState.facilities.training;
+            
+            gameState.players.forEach(player => {
+                if (player.age < 28 && Math.random() > 0.3) {
+                    // Random attribute development
+                    const attrs = ['speed', 'shooting', 'passing', 'defense', 'physical', 'iq'];
+                    const attr = attrs[Math.floor(Math.random() * attrs.length)];
+                    const gain = Math.floor(Math.random() * developmentRate);
+                    
+                    if (player.skills[attr] < 99) {
+                        player.skills[attr] = Math.min(99, player.skills[attr] + gain);
+                        
+                        // Update overall
+                        const total = Object.values(player.skills).reduce((a, b) => a + b, 0);
+                        player.ovr = Math.floor(total / 6);
+                    }
+                }
+                
+                // Recover condition
+                player.condition = Math.min(100, player.condition + 5);
+            });
+            
+            addNews('Training', 'Team completed training session. Players improved!');
+            updateAllUI();
+            showNotification('Training complete!', 'success');
+        }
+
+        // ==================== ACADEMY ====================
+        function renderAcademy() {
+            document.getElementById('academyLevel').textContent = gameState.facilities.youth;
+            document.getElementById('academyQuality').style.width = (gameState.facilities.youth * 10) + '%';
+            document.getElementById('prospectCount').textContent = gameState.prospects.length;
+            
+            const academyList = document.getElementById('academyList');
+            academyList.innerHTML = gameState.prospects.map(prospect => `
+                <div class="prospect-card">
+                    <div class="player-avatar" style="width: 50px; height: 50px; font-size: 1.2rem;">${prospect.name.split(' ').map(n => n[0]).join('')}</div>
+                    <div class="player-info">
+                        <div class="player-name">${prospect.name}</div>
+                        <div class="text-silver">${prospect.position} | Age ${prospect.age}</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="prospect-potential">${prospect.potential}</div>
+                        <div class="text-silver">Potential</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="stat-value ${getRatingClass(prospect.ovr)}">${prospect.ovr}</div>
+                        <div class="text-silver">OVR</div>
+                    </div>
+                    <button class="btn btn-primary btn-small" onclick="promoteProspect(${prospect.id})">Promote</button>
+                </div>
+            `).join('');
+        }
+
+        function generateProspects() {
+            const count = 2 + Math.floor(Math.random() * 3);
+            const newProspects = [];
+            
+            for (let i = 0; i < count; i++) {
+                if (gameState.prospects.length >= 15) break;
+                
+                const prospect = generatePlayer(16 + Math.floor(Math.random() * 2), 45, 70);
+                prospect.potential = 55 + Math.floor(Math.random() * 40);
+                prospect.age = 16 + Math.floor(Math.random() * 2);
+                gameState.prospects.push(prospect);
+            }
+            
+            renderAcademy();
+            showNotification(`Generated ${count} new prospects!`, 'success');
+        }
+
+        function promoteProspect(prospectId) {
+            const prospectIndex = gameState.prospects.findIndex(p => p.id === prospectId);
+            if (prospectIndex === -1) return;
+            
+            const prospect = gameState.prospects[prospectIndex];
+            
+            if (gameState.players.length >= 30) {
+                showNotification('Roster full! Release a player first.', 'error');
+                return;
+            }
+            
+            gameState.players.push(prospect);
+            gameState.prospects.splice(prospectIndex, 1);
+            
+            addNews('Promotion', `${prospect.name} promoted to senior team!`);
+            updateAllUI();
+            showNotification(`${prospect.name} promoted!`, 'success');
+        }
+
+        // ==================== FACILITIES ====================
+        function renderFacilities() {
+            const f = gameState.facilities;
+            
+            document.getElementById('arenaLevel').textContent = f.arena;
+            document.getElementById('arenaCapacity').textContent = (15000 + f.arena * 5000).toLocaleString();
+            document.getElementById('ticketPrice').textContent = '$' + (50 + f.arena * 10);
+            document.getElementById('revenuePerGame').textContent = '$' + Math.floor((500 + f.arena * 100) / 1000) + 'K';
+            
+            document.getElementById('trainingLevel').textContent = 'Level ' + f.training;
+            document.getElementById('medicalLevel').textContent = 'Level ' + f.medical;
+            document.getElementById('youthLevel').textContent = 'Level ' + f.youth;
+            document.getElementById('analyticsLevel').textContent = 'Level ' + f.analytics;
+        }
+
+        function upgradeFacility(type) {
+            const cost = 5000000 * gameState.facilities[type];
+            
+            if (gameState.team.budget < cost) {
+                showNotification('Insufficient funds!', 'error');
+                return;
+            }
+            
+            if (gameState.facilities[type] >= 10) {
+                showNotification('Maximum level reached!', 'warning');
+                return;
+            }
+            
+            gameState.team.budget -= cost;
+            gameState.facilities[type]++;
+            
+            addNews('Upgrade', `${type.charAt(0).toUpperCase() + type.slice(1)} facility upgraded to level ${gameState.facilities[type]}!`);
+            updateAllUI();
+            showNotification(`${type} upgraded!`, 'success');
+        }
+
+        // ==================== LEAGUE ====================
+        function renderLeague() {
+            const leagueTable = document.getElementById('leagueTable');
+            
+            // Sort by points
+            const sorted = [...gameState.league].sort((a, b) => b.points - a.points);
+            
+            leagueTable.innerHTML = sorted.map((team, index) => `
+                <tr class="${team.isPlayer ? 'text-ice' : ''}">
+                    <td><span class="league-pos ${index < 16 ? 'playoffs' : ''}">${index + 1}</span></td>
+                    <td class="team-row">${team.name}</td>
+                    <td>${team.gp}</td>
+                    <td>${team.wins}</td>
+                    <td>${team.losses}</td>
+                    <td>${team.ot}</td>
+                    <td><strong>${team.points}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function showLeagueTab(tab) {
+            // For now, just regular season
+            renderLeague();
+        }
+
+        // ==================== NEWS ====================
+        function addNews(title, content) {
+            gameState.news.unshift({
+                id: Date.now(),
+                title: title,
+                content: content,
+                date: `Day ${gameState.day}`
+            });
+            
+            // Keep only last 50 news
+            if (gameState.news.length > 50) {
+                gameState.news.pop();
+            }
+        }
+
+        function renderNews() {
+            const newsFeed = document.getElementById('newsFeed');
+            const dashboardNews = document.getElementById('dashboardNews');
+            
+            const newsHtml = gameState.news.slice(0, 10).map(news => `
+                <div class="news-item">
+                    <div class="news-date">${news.date}</div>
+                    <div class="news-title">${news.title}</div>
+                    <div class="news-content">${news.content}</div>
+                </div>
+            `).join('');
+            
+            newsFeed.innerHTML = newsHtml || '<div class="text-center text-silver">No news yet</div>';
+            dashboardNews.innerHTML = newsHtml || '<div class="text-center text-silver">No news yet</div>';
+        }
+
+        // ==================== GAME FLOW ====================
+        function simWeek() {
+            // Advance time
+            gameState.day += 7;
+            gameState.week = Math.floor((gameState.day - 1) / 7) + 1;
+            
+            // Season wrap
+            if (gameState.week > 82) {
+                gameState.season++;
+                gameState.week = 1;
+                gameState.day = 1;
+                gameState.record = { wins: 0, losses: 0, ot: 0 };
+                addNews('New Season', `Season ${gameState.season} begins!`);
+            }
+            
+            // Player condition recovery
+            gameState.players.forEach(p => {
+                p.condition = Math.min(100, p.condition + 3);
+            });
+            
+            // Generate new transfer market players periodically
+            if (gameState.week % 4 === 0) {
+                generateTransferMarket();
+            }
+            
+            updateAllUI();
+            showNotification('Week ' + gameState.week + ' simmed!', 'success');
+        }
+
+        // ==================== NAVIGATION ====================
+        function showPage(pageId) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+            
+            // Show selected page
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.querySelector(`[data-page="${pageId}"]`)?.classList.add('active');
+            
+            // Update sidebar
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            if (pageId === 'dashboard') sidebarItems[0].classList.add('active');
+            if (pageId === 'roster') sidebarItems[1].classList.add('active');
+            if (pageId === 'lines') sidebarItems[2].classList.add('active');
+            if (pageId === 'tactics') sidebarItems[3].classList.add('active');
+        }
+
+        // ==================== SAVE/LOAD ====================
+        function saveGame() {
+            const saveData = JSON.stringify(gameState);
+            localStorage.setItem('iceDynastySave', saveData);
+            showNotification('Game saved!', 'success');
+        }
+
+        function loadGame() {
+            const saveData = localStorage.getItem('iceDynastySave');
+            if (saveData) {
+                try {
+                    gameState = JSON.parse(saveData);
+                    document.getElementById('welcomeScreen').style.display = 'none';
+                    updateAllUI();
+                    showNotification('Game loaded!', 'success');
+                    return true;
+                } catch (e) {
+                    console.error('Load error:', e);
+                }
+            }
+            return false;
+        }
+
+        // ==================== NOTIFICATIONS ====================
+        function showNotification(message, type = 'info') {
+            const existing = document.querySelector('.notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${type}`;
+            notification.innerHTML = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // ==================== START GAME ====================
+        function startGame() {
+            const teamName = document.getElementById('teamNameInput').value || 'Ice Dynasty';
+            const teamColor = document.querySelector('.color-option.selected')?.dataset.color || '#00d4ff';
+            const difficulty = document.getElementById('difficultySelect').value;
+            
+            initGame(teamName, teamColor, difficulty);
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                showPage(tab.dataset.page);
+            });
+        });
+
+        // Color picker
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                option.classList.add('selected');
+            });
+        });
+
+        // Close modal on outside click
+        document.getElementById('playerModal').addEventListener('click', (e) => {
+            if (e.target.id === 'playerModal') {
+                closeModal();
+            }
+        });
+
+        // Auto-save
+        setInterval(saveGame, 60000);
+
+        // Try to load saved game on startup
+        window.onload = () => {
+            if (!loadGame()) {
+                // Show welcome screen (already hidden by default in HTML)
+            }
+        };
+    </script>
+</body>
+</html>
